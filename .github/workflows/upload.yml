@@ -38,6 +38,12 @@ jobs:
         async function uploadToGCS(filePath) {
           const fileName = filePath.split('/').pop();
           const bucket = storage.bucket(bucketName);
+          const file = bucket.file(`${folderName}/${fileName}`);
+          const [exists] = await file.exists();
+          if (exists) {
+            console.log(`File ${fileName} already exists in GCS.`);
+            return;
+          }
           await bucket.upload(filePath, {
             destination: `${folderName}/${fileName}`,
           });
