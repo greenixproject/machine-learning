@@ -1,47 +1,46 @@
 name: Upload model to GCS
 on:
   push:
-    paths:
-      - '*.h5'
+    branches:
+      - main
 
 jobs:
   upload:
     runs-on: ubuntu-latest
     steps:
-    - name: Checkout ML repository
-      uses: actions/checkout@v2
+      - name: Checkout ML repository
+        uses: actions/checkout@v2
 
-    - name: Set up Node.js
-      uses: actions/setup-node@v2
-      with:
-        node-version: '14'
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '14'
 
-    - name: Install dependencies
-      run: |
-        npm install @google-cloud/storage
-        npm install fs
+      - name: Install dependencies
+        run: |
+          npm install @google-cloud/storage
+          npm install fs
 
-    - name: Upload files to GCS
-      run: |
-        const fs = require('fs');
-        const { Storage } = require('@google-cloud/storage');
-        const storage = new Storage({ projectId: 'tester-auth-57054', keyFilename: '${{ secrets.ML_CREDENTIALS }}' });
-        const bucketName = 'tester-dataset';
-        const folderName = 'dataset';
+      - name: Upload files to GCS
+        run: |
+          const fs = require('fs');
+          const { Storage } = require('@google-cloud/storage');
+          const storage = new Storage({ projectId: 'tester-auth-57054', keyFilename: '${{ secrets.ML_CREDENTIALS }}' });
+          const bucketName = 'tester-dataset';
+          const folderName = 'dataset';
 
-        async function uploadToGCS(filePath) {
-          const fileName = filePath.split('/').pop();
-          const bucket = storage.bucket(bucketName);
-          await bucket.upload(filePath, {
-            destination: `${folderName}/${fileName}`,
-          });
-          console.log(`File ${fileName} berhasil diunggah ke GCS.`);
-        }
+          async function uploadToGCS(filePath) {
+            const fileName = filePath.split('/').pop();
+            const bucket = storage.bucket(bucketName);
+            await bucket.upload(filePath, {
+              destination: `${folderName}/${fileName}`,
+            });
+            console.log(`File ${fileName} berhasil diunggah ke GCS.`);
+          }
 
-        fs.readdirSync('.').forEach((file) => {
-          if (file.endsWith('.h5')) {
+          const files = fs.readdirSync('.').filter((file) => file.endsWith('.h5'));
+          for (const file of files) {
             uploadToGCS(file);
           }
-        });
-      env:
-        GOOGLE_APPLICATION_CREDENTIALS: ${{ secrets.ML_CREDENTIALS }}
+        env:
+          GOOGLE_APPLICATION_CREDENTIALS: ${{ secrets.ML_CREDENTIALS }}
