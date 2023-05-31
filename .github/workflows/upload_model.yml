@@ -23,12 +23,11 @@ jobs:
 
       - name: Upload files to GCS
         run: |
+          npm install @google-cloud/storage fs-extra
+          node -e "
           const fs = require('fs');
           const { Storage } = require('@google-cloud/storage');
-          const credentials = JSON.parse(Buffer.from('${{ secrets.ML_CREDENTIALS }}', 'base64').toString('utf8'));
-          const projectId = credentials.project_id;
-          const keyFilename = '/path/to/keyfile.json'; // Ganti dengan path yang sesuai
-          const storage = new Storage({ projectId, keyFilename });
+          const storage = new Storage();
           const bucketName = 'tester-dataset';
           const folderName = 'dataset';
 
@@ -38,12 +37,10 @@ jobs:
             await bucket.upload(filePath, {
               destination: `${folderName}/${fileName}`,
             });
-            console.log(`File ${fileName} berhasil diunggah ke GCS.`);
+            console.log('File ' + fileName + ' berhasil diunggah ke GCS.');
           }
 
           const files = fs.readdirSync('.').filter((file) => file.endsWith('.h5'));
           for (const file of files) {
             uploadToGCS(file);
-          }
-        env:
-          GOOGLE_APPLICATION_CREDENTIALS: ${{ secrets.ML_CREDENTIALS }}
+          }"
