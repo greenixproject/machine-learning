@@ -24,7 +24,6 @@ jobs:
       - name: Upload files to GCS
         run: |
           cd machine-learning
-          node -e "
           const fs = require('fs');
           const { Storage } = require('@google-cloud/storage');
           const storage = new Storage();
@@ -35,12 +34,12 @@ jobs:
             const fileName = filePath.split('/').pop();
             const bucket = storage.bucket(bucketName);
             await bucket.upload(filePath, {
-              destination: \`\${folderName}/\${fileName}\`,
+              destination: `${folderName}/${fileName}`,
             });
-            console.log('File ' + fileName + ' berhasil diunggah ke GCS.');
+            console.log(`File ${fileName} berhasil diunggah ke GCS.`);
           }
 
-          const files = fs.readdirSync('.').filter((file) => file.endsWith('.h5'));
+          const files = fs.readdirSync('./credentials').filter((file) => file.endsWith('.h5'));
           for (const file of files) {
-            uploadToGCS(file);
-          }"
+            uploadToGCS(`./credentials/${file}`);
+          }
