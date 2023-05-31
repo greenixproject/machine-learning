@@ -1,0 +1,55 @@
+name: Upload H5 Models to GCS
+
+on:
+  push:
+    paths:
+      - '**.h5'
+
+jobs:
+  upload-to-gcs:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v2
+      with:
+        node-version: 14
+
+    - name: Install dependencies
+      run: npm install @google-cloud/storage
+
+    - name: Upload models to GCS
+      env:
+        GOOGLE_APPLICATION_CREDENTIALS_DATA: ${{ secrets.ML_CREDENTIALS }}
+        BUCKET_NAME: 'tester-dataset'
+        FOLDER_NAME: 'dataset'
+        PROJECT_ID: 'tester-auth-57054'
+      run: |
+        echo $GOOGLE_APPLICATION_CREDENTIALS_DATA > ./gcp-sa-key.json
+        process.env.GOOGLE_APPLICATION_CREDENTIALS = './gcp-sa-key.json';
+        const fs = require('fs');
+        const { Storage } = require('@google-cloud/storage');
+        const storage = new Storage({ projectId: process.env.PROJECT_ID });
+        const bucketName = process.env.BUCKET_NAME;
+        const folderName = process.env.FOLDER_NAME;
+        async function uploadToGCS(filePath) {
+          const fileName = filePath.split('/').pop();
+          const bucket = storage.bucket(bucketName);
+          await bucket.upload(filePath, {
+            destination: `${folderName}/${fileName}`,
+          });
+          console.log(`File ${fileName} berhasil diunggah ke GCS.`);
+        }
+        function searchFiles(dirPath) {
+          fs.readdirSync(dirPath).forEach((file) => {
+            const filePath = `${dirPath}/${file}`;
+            const stat = fs.statSync(filePath);
+            if (stat.isFile() && file.endsWith('.h5')) {
+              uploadToGCS(filePath);
+            }
+          });
+        }
+        searchFiles('.');
