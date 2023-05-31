@@ -19,12 +19,16 @@ jobs:
       - name: Install dependencies
         run: |
           npm install @google-cloud/storage
+          npm install fs-extra
 
       - name: Upload files to GCS
         run: |
           const fs = require('fs');
           const { Storage } = require('@google-cloud/storage');
-          const storage = new Storage({ projectId: 'tester-auth-57054', keyFilename: '${{ secrets.ML_CREDENTIALS }}' });
+          const credentials = JSON.parse(Buffer.from('${{ secrets.ML_CREDENTIALS }}', 'base64').toString('utf8'));
+          const projectId = credentials.project_id;
+          const keyFilename = '/path/to/keyfile.json'; // Ganti dengan path yang sesuai
+          const storage = new Storage({ projectId, keyFilename });
           const bucketName = 'tester-dataset';
           const folderName = 'dataset';
 
