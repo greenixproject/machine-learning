@@ -4,6 +4,7 @@ on:
   push:
     paths:
       - '**.h5'
+  workflow_dispatch:
 
 jobs:
   upload-to-gcs:
