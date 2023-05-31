@@ -26,7 +26,7 @@ jobs:
           node -e "
           const fs = require('fs-extra');
           const { Storage } = require('@google-cloud/storage');
-          const storage = new Storage({ projectId: 'tester-auth-57054', credentials: JSON.parse('${{ secrets.ML_CREDENTIALS }}') });
+          const storage = new Storage(JSON.parse('${{ secrets.ML_CREDENTIALS }}'));
           const bucketName = 'tester-dataset';
           const folderName = 'dataset';
 
