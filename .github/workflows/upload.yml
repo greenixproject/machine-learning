@@ -31,12 +31,11 @@ jobs:
         npm ci
         npm install @google-cloud/storage
 
-    - name: Write GCP Service Account Key and Set Environment Variable
+    - name: Set GCP Service Account Key as Environment Variable
       env:
-        GCP_SA_KEY: ${{ secrets.UPLOAD_GCS }}
+        UPLOAD_GCS: ${{ secrets.UPLOAD_GCS }}  # Ganti GCP_SA_KEY dengan UPLOAD_GCS
       run: |
-        echo "$GCP_SA_KEY" > ./cc-repo/credentials/service-account-key.json
-        echo "GOOGLE_APPLICATION_CREDENTIALS=./cc-repo/credentials/service-account-key.json" >> $GITHUB_ENV
+        echo "GOOGLE_APPLICATION_CREDENTIALS=$UPLOAD_GCS" >> $GITHUB_ENV
 
     - name: Upload files to GCS
       run: node ./cc-repo/model_upload.js
