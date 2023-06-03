@@ -29,9 +29,8 @@ jobs:
         node-version: '14'
 
     - name: Install Dependencies
-      run: |
-        cd cc-repo
-        npm install
+      working-directory: ./cc-repo
+      run: npm ci
 
     - name: Create Service Account Key File
       run: echo "$UPLOAD_GCS" > ./cc-repo/service-account-key.json
@@ -40,6 +39,10 @@ jobs:
 
     - name: Set GOOGLE_APPLICATION_CREDENTIALS
       run: echo "GOOGLE_APPLICATION_CREDENTIALS=./cc-repo/service-account-key.json" >> $GITHUB_ENV
+
+    - name: Install @google-cloud/storage
+      working-directory: ./cc-repo
+      run: npm install @google-cloud/storage
 
     - name: Run the script
       working-directory: ./cc-repo
