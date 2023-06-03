@@ -1,18 +1,24 @@
-name: Upload H5 Models to GCS
+name: Upload to GCS
 
 on:
   push:
-    paths:
-      - '**.h5'
-  workflow_dispatch:
+    branches:
+      - main  # Ganti dengan nama branch Anda
 
 jobs:
-  upload-to-gcs:
+  upload:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout repository
+    - name: Checkout ML repo
       uses: actions/checkout@v2
+
+    - name: Checkout CC repo
+      uses: actions/checkout@v2
+      with:
+        repository: greenixproject/cloud-computing
+        ref: testing-wf  # Branch tempat Anda menyimpan script model_upload.js
+        path: cc-repo
 
     - name: Set up Node.js
       uses: actions/setup-node@v2
@@ -20,43 +26,17 @@ jobs:
         node-version: 14
 
     - name: Install dependencies
-      run: npm install @google-cloud/storage
-
-    - name: Upload models to GCS
-      env:
-        GOOGLE_APPLICATION_CREDENTIALS_DATA: ${{ secrets.ML_CREDENTIALS }}
-        BUCKET_NAME: 'tester-dataset'
-        FOLDER_NAME: 'dataset'
-        PROJECT_ID: 'tester-auth-57054'
       run: |
-        echo $GOOGLE_APPLICATION_CREDENTIALS_DATA > ./gcp-sa-key.json
-        process.env.GOOGLE_APPLICATION_CREDENTIALS = './gcp-sa-key.json';
-        const fs = require('fs');
-        const { Storage } = require('@google-cloud/storage');
-        const storage = new Storage({ projectId: process.env.PROJECT_ID });
-        const bucketName = process.env.BUCKET_NAME;
-        const folderName = process.env.FOLDER_NAME;
-        async function uploadToGCS(filePath) {
-          const fileName = filePath.split('/').pop();
-          const bucket = storage.bucket(bucketName);
-          const file = bucket.file(`${folderName}/${fileName}`);
-          const [exists] = await file.exists();
-          if (exists) {
-            console.log(`File ${fileName} already exists in GCS.`);
-            return;
-          }
-          await bucket.upload(filePath, {
-            destination: `${folderName}/${fileName}`,
-          });
-          console.log(`File ${fileName} berhasil diunggah ke GCS.`);
-        }
-        function searchFiles(dirPath) {
-          fs.readdirSync(dirPath).forEach((file) => {
-            const filePath = `${dirPath}/${file}`;
-            const stat = fs.statSync(filePath);
-            if (stat.isFile() && file.endsWith('.h5')) {
-              uploadToGCS(filePath);
-            }
-          });
-        }
-        searchFiles('.');
+        cd cc-repo
+        npm ci
+        npm install @google-cloud/storage
+
+    - name: Write GCP Service Account Key and Set Environment Variable
+      env:
+        GCP_SA_KEY: ${{ secrets.UPLOAD_GCS }}
+      run: |
+        echo "$GCP_SA_KEY" > ./cc-repo/credentials/service-account-key.json
+        echo "GOOGLE_APPLICATION_CREDENTIALS=./cc-repo/credentials/service-account-key.json" >> $GITHUB_ENV
+
+    - name: Upload files to GCS
+      run: node ./cc-repo/model_upload.js
