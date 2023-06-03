@@ -1,41 +1,38 @@
-name: Upload to GCS
+name: Upload Model to GCS
 
 on:
   push:
     branches:
-      - main  # Ganti dengan nama branch Anda
+      - main
 
 jobs:
-  upload:
+  build:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout ML repo
+    - name: Checkout ML Repo
       uses: actions/checkout@v2
 
-    - name: Checkout CC repo
+    - name: Checkout CC Repo
       uses: actions/checkout@v2
       with:
         repository: greenixproject/cloud-computing
-        ref: testing-wf  # Branch tempat Anda menyimpan script model_upload.js
+        ref: testing-wf
         path: cc-repo
 
-    - name: Set up Node.js
-      uses: actions/setup-node@v2
-      with:
-        node-version: 14
+    - name: Write GCP Service Account Key to File and Set Environment Variable
+      env:
+        UPLOAD_GCS: ${{ secrets.UPLOAD_GCS }}
+      run: |
+        echo "$UPLOAD_GCS" > ./gcp-sa-key.json
+        echo "GOOGLE_APPLICATION_CREDENTIALS=$PWD/gcp-sa-key.json" >> $GITHUB_ENV
 
     - name: Install dependencies
       run: |
         cd cc-repo
-        npm ci
-        npm install @google-cloud/storage
+        npm install
 
-    - name: Set GCP Service Account Key as Environment Variable
-      env:
-        UPLOAD_GCS: ${{ secrets.UPLOAD_GCS }}  # Ganti GCP_SA_KEY dengan UPLOAD_GCS
+    - name: Run the script
       run: |
-        echo "GOOGLE_APPLICATION_CREDENTIALS=$UPLOAD_GCS" >> $GITHUB_ENV
-
-    - name: Upload files to GCS
-      run: node ./cc-repo/model_upload.js
+        cd cc-repo
+        node model_upload.js
