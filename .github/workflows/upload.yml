@@ -12,20 +12,20 @@ jobs:
     steps:
     - name: Checkout ML Repo
       uses: actions/checkout@v2
+      with:
+        repository: 'greenixproject/machine-learning'
+        path: ml-repo
 
     - name: Checkout CC Repo
       uses: actions/checkout@v2
       with:
-        repository: greenixproject/cloud-computing
-        ref: testing-wf
+        repository: 'greenixproject/cloud-computing'
         path: cc-repo
 
-    - name: Write GCP Service Account Key to File and Set Environment Variable
-      env:
-        UPLOAD_GCS: ${{ secrets.UPLOAD_GCS }}
-      run: |
-        echo "$UPLOAD_GCS" > ./gcp-sa-key.json
-        echo "GOOGLE_APPLICATION_CREDENTIALS=$PWD/gcp-sa-key.json" >> $GITHUB_ENV
+    - name: Setup Node.js environment
+      uses: actions/setup-node@v2
+      with:
+        node-version: '14'
 
     - name: Install dependencies
       run: |
@@ -36,3 +36,5 @@ jobs:
       run: |
         cd cc-repo
         node model_upload.js
+      env:
+        GOOGLE_APPLICATION_CREDENTIALS: ${{ secrets.UPLOAD_GCS }}
