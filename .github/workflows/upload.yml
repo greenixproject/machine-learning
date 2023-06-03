@@ -1,4 +1,4 @@
-name: Upload Model to GCS
+name: Upload Models to GCS
 
 on:
   push:
@@ -6,7 +6,7 @@ on:
       - main
 
 jobs:
-  build:
+  upload:
     runs-on: ubuntu-latest
 
     steps:
@@ -14,27 +14,32 @@ jobs:
       uses: actions/checkout@v2
       with:
         repository: 'greenixproject/machine-learning'
-        path: ml-repo
+        path: 'ml-repo'
 
     - name: Checkout CC Repo
       uses: actions/checkout@v2
       with:
         repository: 'greenixproject/cloud-computing'
-        path: cc-repo
+        path: 'cc-repo'
 
-    - name: Setup Node.js environment
+    - name: Set up Node.js
       uses: actions/setup-node@v2
       with:
         node-version: '14'
 
-    - name: Install dependencies
+    - name: Install Dependencies
       run: |
         cd cc-repo
         npm install
 
-    - name: Run the script
-      run: |
-        cd cc-repo
-        node model_upload.js
+    - name: Create Service Account Key File
+      run: echo "$UPLOAD_GCS" > ./cc-repo/service-account-key.json
       env:
-        GOOGLE_APPLICATION_CREDENTIALS: ${{ secrets.UPLOAD_GCS }}
+        UPLOAD_GCS: ${{ secrets.UPLOAD_GCS }}
+
+    - name: Set GOOGLE_APPLICATION_CREDENTIALS
+      run: echo "GOOGLE_APPLICATION_CREDENTIALS=./cc-repo/service-account-key.json" >> $GITHUB_ENV
+
+    - name: Run the script
+      working-directory: ./cc-repo
+      run: node model_upload.js
