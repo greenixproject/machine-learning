@@ -44,6 +44,10 @@ jobs:
       working-directory: ./cc-repo
       run: npm install @google-cloud/storage
 
+    - name: Install @tensorflow/tfjs-node and @tensorflow/tfjs-converter
+      working-directory: ./cc-repo
+      run: npm install @tensorflow/tfjs-node @tensorflow/tfjs-converter
+
     - name: Run the script
       working-directory: ./cc-repo
       run: node model_upload.js
