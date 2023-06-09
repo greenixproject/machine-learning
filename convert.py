@@ -4,7 +4,7 @@ from google.cloud import storage
 from tensorflow import keras
 
 # Mendapatkan informasi service account dari repository secret
-service_account_info = json.loads(os.environ.get('UPLOAD_GCS_SERVICE_ACCOUNT_JSON', '{}'))
+service_account_info = json.loads(os.environ.get('UPLOAD_GCS'))
 
 # Inisialisasi klien Google Cloud Storage dengan menggunakan informasi service account
 storage_client = storage.Client.from_service_account_info(service_account_info)
