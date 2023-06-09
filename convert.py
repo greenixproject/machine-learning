@@ -41,21 +41,20 @@ def convert_model(file_path):
     return saved_model_path
 
 def search_files(dir_path):
-    for root, dirs, files in os.walk(dir_path):
-        for file in files:
-            if file.endswith('.h5'):
-                file_path = os.path.join(root, file)
-                saved_model_path = convert_model(file_path)
-                upload_converted_to_gcs(saved_model_path)
+    for file in os.listdir(dir_path):
+        if file.endswith('.h5'):
+            file_path = os.path.join(dir_path, file)
+            saved_model_path = convert_model(file_path)
+            upload_converted_to_gcs(saved_model_path)
 
 # Menjalankan pencarian file dan mengunggahnya ke GCS
-search_files(os.path.join(os.path.dirname(__file__), '..'))
+search_files(os.path.dirname(os.path.abspath(__file__)))
 
 def delete_obsolete_files():
     bucket = storage_client.get_bucket(bucket_name)
     blobs = bucket.list_blobs(prefix=folder_name)
 
-    repo_files = os.listdir(os.path.join(os.path.dirname(__file__), '..'))
+    repo_files = os.listdir(os.path.dirname(os.path.abspath(__file__)))
 
     for blob in blobs:
         file_name = os.path.basename(blob.name)
