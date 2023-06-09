@@ -48,7 +48,6 @@ def search_files(dir_path):
             saved_model_path = convert_model(file_path)
             upload_converted_to_gcs(saved_model_path)
 
-
 # Menjalankan pencarian file dan mengunggahnya ke GCS
 search_files(os.path.dirname(os.path.abspath(__file__)))
 
