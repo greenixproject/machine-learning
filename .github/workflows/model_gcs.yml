@@ -28,12 +28,12 @@ jobs:
         pip install tensorflow google-cloud-storage
 
     - name: Create Service Account Key File
-      run: echo "$UPLOAD_GCS" > ./ml-repo/service-account-key.json
+      run: echo "$SERVICE_ACCOUNT_KEY" > ./ml-repo/service-account-key.json
       env:
-        UPLOAD_GCS: ${{ secrets.UPLOAD_GCS }}
+        SERVICE_ACCOUNT_KEY: ${{ secrets.UPLOAD_GCS_SERVICE_ACCOUNT_KEY }}
 
     - name: Set GOOGLE_APPLICATION_CREDENTIALS
-      run: echo "GOOGLE_APPLICATION_CREDENTIALS=./ml-repo/service-account-key.json" >> $GITHUB_ENV
+      run: echo "GOOGLE_APPLICATION_CREDENTIALS=$GITHUB_WORKSPACE/ml-repo/service-account-key.json" >> $GITHUB_ENV
 
     - name: Run the script
       working-directory: ./ml-repo
