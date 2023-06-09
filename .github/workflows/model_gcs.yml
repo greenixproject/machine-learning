@@ -10,44 +10,31 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout ML Repo
+    - name: Checkout Repo
       uses: actions/checkout@v2
       with:
         repository: 'greenixproject/machine-learning'
         path: 'ml-repo'
 
-    - name: Checkout CC Repo
-      uses: actions/checkout@v2
+    - name: Set up Python
+      uses: actions/setup-python@v2
       with:
-        repository: 'greenixproject/cloud-computing'
-        ref: 'testing-wf'
-        path: 'cc-repo'
-
-    - name: Set up Node.js
-      uses: actions/setup-node@v2
-      with:
-        node-version: '16'
+        python-version: '3.10'
 
     - name: Install Dependencies
-      working-directory: ./cc-repo
-      run: npm ci
+      working-directory: ./ml-repo
+      run: |
+        python -m pip install --upgrade pip
+        pip install tensorflow google-cloud-storage
 
     - name: Create Service Account Key File
-      run: echo "$UPLOAD_GCS" > ./cc-repo/service-account-key.json
+      run: echo "$UPLOAD_GCS" > ./ml-repo/service-account-key.json
       env:
         UPLOAD_GCS: ${{ secrets.UPLOAD_GCS }}
 
     - name: Set GOOGLE_APPLICATION_CREDENTIALS
-      run: echo "GOOGLE_APPLICATION_CREDENTIALS=./cc-repo/service-account-key.json" >> $GITHUB_ENV
-
-    - name: Install @google-cloud/storage
-      working-directory: ./cc-repo
-      run: npm install @google-cloud/storage
-
-    - name: Install @tensorflow/tfjs-node and @tensorflow/tfjs-converter
-      working-directory: ./cc-repo
-      run: npm install @tensorflow/tfjs-node @tensorflow/tfjs-converter
+      run: echo "GOOGLE_APPLICATION_CREDENTIALS=./ml-repo/service-account-key.json" >> $GITHUB_ENV
 
     - name: Run the script
-      working-directory: ./cc-repo
-      run: node model_upload.js
+      working-directory: ./ml-repo
+      run: python convert.py
