@@ -41,11 +41,13 @@ def convert_model(file_path):
     return saved_model_path
 
 def search_files(dir_path):
-    for file in os.listdir(dir_path):
-        if file.endswith('.h5'):
-            file_path = os.path.join(dir_path, file)
+    files = os.listdir(dir_path)
+    for file in files:
+        file_path = os.path.join(dir_path, file)
+        if os.path.isfile(file_path) and file.endswith('.h5'):
             saved_model_path = convert_model(file_path)
             upload_converted_to_gcs(saved_model_path)
+
 
 # Menjalankan pencarian file dan mengunggahnya ke GCS
 search_files(os.path.dirname(os.path.abspath(__file__)))
