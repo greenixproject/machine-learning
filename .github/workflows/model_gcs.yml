@@ -10,31 +10,40 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout Repo
+    - name: Checkout ML Repo
       uses: actions/checkout@v2
       with:
         repository: 'greenixproject/machine-learning'
         path: 'ml-repo'
 
-    - name: Set up Python
-      uses: actions/setup-python@v2
+    - name: Checkout CC Repo
+      uses: actions/checkout@v2
       with:
-        python-version: '3.10'
+        repository: 'greenixproject/cloud-computing'
+        ref: 'testing-wf'
+        path: 'cc-repo'
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v2
+      with:
+        node-version: '14'
 
     - name: Install Dependencies
-      working-directory: ./ml-repo
-      run: |
-        python -m pip install --upgrade pip
-        pip install tensorflow google-cloud-storage
+      working-directory: ./cc-repo
+      run: npm ci
 
     - name: Create Service Account Key File
-      run: echo "$SERVICE_ACCOUNT_KEY" > ./ml-repo/service-account-key.json
+      run: echo "$UPLOAD_GCS" > ./cc-repo/service-account-key.json
       env:
-        SERVICE_ACCOUNT_KEY: ${{ secrets.UPLOAD_GCS_SERVICE_ACCOUNT_KEY }}
+        UPLOAD_GCS: ${{ secrets.UPLOAD_GCS }}
 
     - name: Set GOOGLE_APPLICATION_CREDENTIALS
-      run: echo "GOOGLE_APPLICATION_CREDENTIALS=$GITHUB_WORKSPACE/ml-repo/service-account-key.json" >> $GITHUB_ENV
+      run: echo "GOOGLE_APPLICATION_CREDENTIALS=./cc-repo/service-account-key.json" >> $GITHUB_ENV
+
+    - name: Install @google-cloud/storage
+      working-directory: ./cc-repo
+      run: npm install @google-cloud/storage
 
     - name: Run the script
-      working-directory: ./ml-repo
-      run: python convert.py
+      working-directory: ./cc-repo
+      run: node model_upload.js
