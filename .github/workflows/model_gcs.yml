@@ -20,7 +20,7 @@ jobs:
       uses: actions/checkout@v2
       with:
         repository: 'greenixproject/cloud-computing'
-        ref: 'testing-wf'
+        ref: 'main'
         path: 'cc-repo'
 
     - name: Set up Node.js
