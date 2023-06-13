@@ -1,0 +1,2 @@
+model_checkpoint_path: "bus_model.bin"
+all_model_checkpoint_paths: "bus_model.bin"
