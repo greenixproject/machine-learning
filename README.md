@@ -6,7 +6,7 @@ Machine Learning Deployment
 Food_Greenix contain the dataset used for training. This folder also contains the code for generating the dataset.
 The folder also contain the model food used machine learning with format .h5 and .json. The model generated from the dataset is stored in this folder.
 
-### Transportation_Greenix
+### Vehicle_Greenix
 Food_Greenix contain the dataset used for training. This folder also contains the code for generating the dataset.
 The folder also contain the model transportation used machine learning with format .h5 and .json. The model generated from the dataset is stored in this folder.
 
